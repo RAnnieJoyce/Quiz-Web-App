@@ -1,0 +1,316 @@
+<html>
+    <head>
+        <title>Quiz app</title>
+        <link href="bootstrap/css/bootstrap.min.css" rel="stylesheet">
+        <style>
+            body{
+                background-image: url('quiz_bg.jpg');
+                background-size: cover;
+                background-repeat: no-repeat;
+                color: white;
+            }
+        </style>
+        <link href="//maxcdn.bootstrapcdn.com/font-awesome/4.1.0/css/font-awesome.min.css" rel="stylesheet"/>
+        <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/font-awesome/4.7.0/css/font-awesome.min.css">
+    </head>
+    <body>
+        <div class="container-fluid">
+
+            <div class="row m-0">
+                <div class="col-sm-12 mt-3 text-center"><i class="pb-2 h4 border-bottom">Quiz Web App</i></div>
+            </div>
+
+            <!--Quiz type choosing Screen Starts here-->
+            <div class="row m-0" id="first_screen">
+                <div class="col-sm-12 text-center mt-5">
+                    <button class="btn btn-lg btn-primary" onclick="chooseType('create')">
+                        <i class="fa fa-plus-circle fa-2x mb-1" aria-hidden="true"></i>
+                        <p class="mb-0">Create New Quiz</p>
+                    </button>
+                    <button class="btn btn-info btn-lg" onclick="chooseType('start')">
+                        <i class="fa fa-question-circle fa-2x mb-1" aria-hidden="true"></i>
+                        <p class="mb-0">Start Existing Quiz</p>
+                    </button>
+                </div>
+            </div>
+            <!--Quiz type choosing Screen Ends here-->
+
+            <!--Create Quiz Screen Starts here-->
+            <div class="row m-0" style="display: none;" id="second_screen_create_quiz">
+                <div class="col-sm-12 my-3"><h6 class="text-center">Create your own quiz.</h6></div>
+                <div class="col-sm-12">
+                    <textarea class="form-control" placeholder="Enter Question" rows="3" id="question"></textarea>
+                </div>
+                <div class="col-sm-6 mt-3">
+                    <input class="form-control" placeholder="Enter First Option" id="option_1">
+                </div>
+                <div class="col-sm-6 mt-3">
+                    <input class="form-control" placeholder="Enter Second Option" id="option_2">
+                </div>
+                <div class="col-sm-6 mt-3">
+                    <input class="form-control" placeholder="Enter Third Option" id="option_3">
+                </div>
+                <div class="col-sm-6 mt-3">
+                    <input class="form-control" placeholder="Enter Forth Option" id="option_4">
+                </div>
+                <div class="col-sm-12 mt-3">
+                    <p class="mb-3">Please choose which Option is the answer:</p>
+                    <input type="radio" name="answer_option" id="answer_1" value="1">
+                    <label for="answer_1">First Option</label>
+                    <input type="radio" name="answer_option" id="answer_2" value="2">
+                    <label for="answer_2">Second Option</label>
+                    <input type="radio" name="answer_option" id="answer_3" value="3">
+                    <label for="answer_3">Third Option</label>
+                    <input type="radio" name="answer_option" id="answer_4" value="4">
+                    <label for="answer_4">Forth Option</label>
+                </div>
+                
+                <div class="col-sm-12 mt-3 text-center">
+                    <button class="btn btn-primary" onclick="goToScreen(1)">Go back</button>
+                    <button class="btn btn-success" onclick="addQUestion()">Add Question</button>
+                    <button class="btn btn-info" style="display: none;" id="answerCreatedQuiz" onclick="goToScreen(3)">Go Next</button>
+                </div>
+
+                <div class="col-sm-12 border rounded mt-3" style="display: none;" id="addedQuestionsListParent">
+                    <h6 class="mt-2">Added Questions:</h6>
+                    <div id="addedQuestionsList">
+                        <!--Here inside we will show the added questions.-->
+                    </div>
+                </div>
+            </div>
+            <!--Create Quiz Screen Ends here-->
+
+            <!--Answering Quiz Screen Starts here-->
+            <div class="row m-0" style="display:none;" id="answer_quiz_screen">
+                <div class="col-sm-12 my-3"><h6 class="text-center">Answer the quiz:</h6></div>
+                <div class="col-sm-12">
+                    <p id="show_question"></p>
+                </div>
+                <div class="col-sm-6">
+                    <input type="radio" name="show_options" id="show_option_1">
+                    <label for="show_option_1" id="show_option_1_label"></label>
+                </div>
+                <div class="col-sm-6">
+                    <input type="radio" name="show_options" id="show_option_2">
+                    <label for="show_option_2" id="show_option_2_label"></label>
+                </div>
+                <div class="col-sm-6">
+                    <input type="radio" name="show_options" id="show_option_3">
+                    <label for="show_option_3" id="show_option_3_label"></label>
+                </div>
+                <div class="col-sm-6">
+                    <input type="radio" name="show_options" id="show_option_4">
+                    <label for="show_option_4" id="show_option_4_label"></label>
+                </div>
+                <div class="col-sm-12 text-center mt-5">
+                    <button class="btn btn-primary" id="show_next_question" onclick="answerQuizQuestion()">Next Question</button>
+                </div>
+            </div>
+            <!--Answering Quiz Screen Ends here-->
+
+            <!--View Results Screen Starts here-->
+            <div class="row m-0" style="display:none;" id="view_results_screen">
+                <div class="col-sm-12 my-3"><h6 class="text-center">View Results:</h6></div>
+                <div class="col-sm-6">
+                    <h4 class="border border-info rounded text-center py-5 mb-0">Correct Answers: <label id="correct_answers_number"></label></h4>
+                </div>
+                <div class="col-sm-6">
+                    <h4 class="border border-info rounded text-center py-5 mb-0">Wrong Answers: <label id="wrong_answers_number"></label></h4>
+                </div>
+            </div>
+            <!--View Results Screen Ends here-->
+        </div>
+    </body>
+    <script>
+        let quizType = ''; // 'create' or 'start'
+        let quizQuestions = [];
+        let currentQuestionNumber = 0; // this is to keep track of the number of question is being shown on the screen while answering the quiz
+        let quizResults = {
+            correct: 0,
+            wrong: 0
+        };
+        let defaultQuestions = [
+                                    {
+                                        "question": "What is the capital of Australia?",
+                                        "option_1": "Sydney",
+                                        "option_2": "Melbourne",
+                                        "option_3": "Canberra",
+                                        "option_4": "Perth",
+                                        "answer": "Canberra"
+                                    },
+                                    {
+                                        "question": "Which planet is known as the Red Planet?",
+                                        "option_1": "Mars",
+                                        "option_2": "Jupiter",
+                                        "option_3": "Venus",
+                                        "option_4": "Mercury",
+                                        "answer": "Mars"
+                                    },
+                                    {
+                                        "question": "Who wrote the famous novel 'To Kill a Mockingbird'?",
+                                        "option_1": "Harper Lee",
+                                        "option_2": "F. Scott Fitzgerald",
+                                        "option_3": "Mark Twain",
+                                        "option_4": "John Steinbeck",
+                                        "answer": "Harper Lee"
+                                    },
+                                    {
+                                        "question": "What is the chemical symbol for gold?",
+                                        "option_1": "Au",
+                                        "option_2": "Ag",
+                                        "option_3": "Fe",
+                                        "option_4": "Hg",
+                                        "answer": "Au"
+                                    },
+                                    {
+                                        "question": "Which country is known as the 'Land of the Rising Sun'?",
+                                        "option_1": "China",
+                                        "option_2": "Japan",
+                                        "option_3": "Korea",
+                                        "option_4": "Thailand",
+                                        "answer": "Japan"
+                                    },
+                                    {
+                                        "question": "Who painted the Mona Lisa?",
+                                        "option_1": "Vincent van Gogh",
+                                        "option_2": "Leonardo da Vinci",
+                                        "option_3": "Pablo Picasso",
+                                        "option_4": "Michelangelo",
+                                        "answer": "Leonardo da Vinci"
+                                    },
+                                    {
+                                        "question": "What is the largest mammal in the world?",
+                                        "option_1": "Elephant",
+                                        "option_2": "Blue Whale",
+                                        "option_3": "Giraffe",
+                                        "option_4": "Hippopotamus",
+                                        "answer": "Blue Whale"
+                                    },
+                                    {
+                                        "question": "Who is known as the 'Father of Modern Physics'?",
+                                        "option_1": "Isaac Newton",
+                                        "option_2": "Albert Einstein",
+                                        "option_3": "Galileo Galilei",
+                                        "option_4": "Nikola Tesla",
+                                        "answer": "Albert Einstein"
+                                    },
+                                    {
+                                        "question": "What is the chemical symbol for water?",
+                                        "option_1": "H2O",
+                                        "option_2": "CO2",
+                                        "option_3": "NaCl",
+                                        "option_4": "O2",
+                                        "answer": "H2O"
+                                    },
+                                    {
+                                        "question": "Which Shakespeare play features the characters Romeo and Juliet?",
+                                        "option_1": "Hamlet",
+                                        "option_2": "Macbeth",
+                                        "option_3": "Romeo and Juliet",
+                                        "option_4": "Othello",
+                                        "answer": "Romeo and Juliet"
+                                    }
+                                ]
+
+
+        function chooseType(type){
+            quizType = type;
+            document.getElementById('first_screen').style.display = 'none';
+            if(quizType == "create"){
+                document.getElementById('second_screen_create_quiz').style.display = '';
+            }else if(quizType == "start"){
+                goToScreen(2);
+            }
+        }
+
+        function goToScreen(screenNumber){
+
+            document.getElementById('first_screen').style.display = 'none';
+            document.getElementById('second_screen_create_quiz').style.display = 'none';
+            document.getElementById('answer_quiz_screen').style.display = 'none';
+            document.getElementById('view_results_screen').style.display = 'none';
+
+            if(screenNumber == 1){
+                document.getElementById('first_screen').style.display = '';
+            }else if(quizType == 'create' && screenNumber == 3){
+                document.getElementById('answer_quiz_screen').style.display = '';
+                showQuizQuestion(0);
+            }else if(screenNumber == 4){
+                document.getElementById('view_results_screen').style.display = '';
+                document.getElementById('correct_answers_number').innerHTML = quizResults.correct;
+                document.getElementById('wrong_answers_number').innerHTML = quizResults.wrong;
+            }else if(quizType == 'start' && screenNumber == 2){
+                quizQuestions = defaultQuestions;
+                document.getElementById('answer_quiz_screen').style.display = '';
+                showQuizQuestion(0);
+            }
+        }
+
+        function addQUestion(){
+            let answer_option_number = document.querySelector('input[name="answer_option"]:checked').value;
+            
+            quizQuestions.push({
+                question: document.getElementById('question').value,
+                option_1: document.getElementById('option_1').value,
+                option_2: document.getElementById('option_2').value,
+                option_3: document.getElementById('option_3').value,
+                option_4: document.getElementById('option_4').value,
+                answer: document.getElementById('option_'+answer_option_number).value,
+            });
+
+            document.getElementById('addedQuestionsList').innerHTML += "<h5 class='mt-3'>Q. "+document.getElementById('question').value+"</h5>";
+            document.getElementById('addedQuestionsList').innerHTML += "<p class='mb-0'> 1."+document.getElementById('option_1').value+" </p>";
+            document.getElementById('addedQuestionsList').innerHTML += "<p class='mb-0'> 2."+document.getElementById('option_2').value+" </p>";
+            document.getElementById('addedQuestionsList').innerHTML += "<p class='mb-0'> 3."+document.getElementById('option_3').value+" </p>";
+            document.getElementById('addedQuestionsList').innerHTML += "<p class='mb-0'> 4."+document.getElementById('option_4').value+" </p>";
+            document.getElementById('addedQuestionsList').innerHTML += "<h6 class='mt-2'>Answer: "+document.getElementById('option_'+answer_option_number).value+"</h6>";
+
+            
+            document.getElementById('addedQuestionsListParent').style.display = ''; // showing the list also because now a question is added.
+            document.getElementById('answerCreatedQuiz').style.display = ''; // Showing the Go Next button because now a question is entered.
+        }
+
+        function showQuizQuestion(questionNumber){
+
+            if(questionNumber == quizQuestions.length-1){
+                // it means this is the last question will be shown so the button "Next question" will be shown as "View results"
+                document.getElementById("show_next_question").innerHTML = "View Results";
+            }
+
+
+            // here we will check if the sent parameter does actually exists or quizQuestions already finished
+            if(questionNumber > quizQuestions.length-1){ 
+                // means questions already finished
+                goToScreen(4);
+            }else{
+                // means questions are still remaining and we can go to next
+
+                currentQuestionNumber = questionNumber; 
+
+                document.getElementById('show_question').innerHTML = "Q. "+quizQuestions[questionNumber].question;
+
+                document.getElementById('show_option_1').value = quizQuestions[questionNumber].option_1;
+                document.getElementById('show_option_2').value = quizQuestions[questionNumber].option_2;
+                document.getElementById('show_option_3').value = quizQuestions[questionNumber].option_3;
+                document.getElementById('show_option_4').value = quizQuestions[questionNumber].option_4;
+
+                document.getElementById('show_option_1_label').innerHTML = quizQuestions[questionNumber].option_1;
+                document.getElementById('show_option_2_label').innerHTML = quizQuestions[questionNumber].option_2;
+                document.getElementById('show_option_3_label').innerHTML = quizQuestions[questionNumber].option_3;
+                document.getElementById('show_option_4_label').innerHTML = quizQuestions[questionNumber].option_4;
+            }
+
+        }
+
+        function answerQuizQuestion(){
+            let selected_answer = document.querySelector('input[name="show_options"]:checked').value;
+           if(quizQuestions[currentQuestionNumber].answer == selected_answer){
+            quizResults.correct += 1;
+           }else{
+            quizResults.wrong += 1;
+           }
+           document.querySelector('input[name="show_options"]').checked = false;
+           showQuizQuestion(currentQuestionNumber+1); // after answering going to the next question
+        }
+    </script>
+</html>
